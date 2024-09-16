@@ -43,10 +43,10 @@ def load_credentials():
             tokens = file.read().strip().split('\n')
         return tokens
     except FileNotFoundError:
-        print("Không tìm thấy file query.txt")
+        print("Tidak menemukan file query.txt")
         return []
     except Exception as e:
-        print("Đã xảy ra lỗi:", str(e))
+        print("Terjadi kesalahan:", str(e))
         return []
 
 def load_proxies():
@@ -55,10 +55,10 @@ def load_proxies():
             proxies = file.read().strip().split('\n')
         return proxies
     except FileNotFoundError:
-        print("Không tìm thấy file proxy.txt")
+        print("Tidak menemukan file proxy.txt")
         return []
     except Exception as e:
-        print("Đã xảy ra lỗi:", str(e))
+        print("Terjadi kesalahan:", str(e))
         return []
 
 def get_proxy_dict(proxy):
@@ -66,16 +66,18 @@ def get_proxy_dict(proxy):
         "http": proxy,
         "https": proxy
     }
+
 def check_proxy_ip(proxy):
     try:
         response = requests.get('https://api.ipify.org?format=json', proxies=get_proxy_dict(proxy), timeout=10)
         if response.status_code == 200:
             ip_data = response.json()
-            return ip_data.get('ip', 'Không tìm thấy IP')
+            return ip_data.get('ip', 'IP tidak ditemukan')
         else:
-            return 'Không lấy được IP'
+            return 'Tidak dapat mengambil IP'
     except Exception as e:
-        return f'Lỗi: {str(e)}'
+        return f'Kesalahan: {str(e)}'
+
 def check_worm(proxy):
     response = requests.get('https://elb.seeddao.org/api/v1/worms', headers=headers, proxies=get_proxy_dict(proxy))
     if response.status_code == 200:
@@ -91,13 +93,13 @@ def check_worm(proxy):
             hours = int(time_diff_seconds // 3600)
             minutes = int((time_diff_seconds % 3600) // 60)
 
-            print(f"{Fore.GREEN+Style.BRIGHT}[ Worms ]: Tiếp theo trong {hours} giờ {minutes} phút - Trạng thái: {'Đã bắt' if is_caught else 'Có sẵn'}")
+            print(f"{Fore.GREEN+Style.BRIGHT}[ Worms ]: Berikutnya dalam {hours} jam {minutes} menit - Status: {'Ditangkap' if is_caught else 'Tersedia'}")
         else:
-            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Dữ liệu worm không đầy đủ")
+            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Data worm tidak lengkap")
 
         return worm_data
     else:
-        print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Không lấy được dữ liệu.")
+        print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Tidak dapat mengambil data.")
         return None
 
 def catch_worm(proxy):
@@ -105,15 +107,15 @@ def catch_worm(proxy):
     if worm_data and not worm_data.get('is_caught', True):
         response = requests.post('https://elb.seeddao.org/api/v1/worms/catch', headers=headers, proxies=get_proxy_dict(proxy))
         if response.status_code == 200:
-            print(f"{Fore.GREEN+Style.BRIGHT}[ Worms ]: Bắt sâu thành công")
+            print(f"{Fore.GREEN+Style.BRIGHT}[ Worms ]: Berhasil menangkap worm")
         elif response.status_code == 400:
-            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Đã bắt sâu")
+            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Worm sudah ditangkap")
         elif response.status_code == 404:
-            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Không tìm thấy sâu")    
+            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Worm tidak ditemukan")    
         else:
-            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Không bắt được sâu, mã trạng thái:", response)
+            print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Tidak dapat menangkap worm, kode status:", response)
     else:
-        print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Sâu không có sẵn hoặc đã bắt.")
+        print(f"{Fore.RED+Style.BRIGHT}[ Worms ]: Worm tidak tersedia atau sudah ditangkap.")
 
 def get_profile(proxy):
     response = requests.get(url_get_profile, headers=headers, proxies=get_proxy_dict(proxy))
@@ -135,17 +137,17 @@ def get_profile(proxy):
         for upgrade_type, level in upgrades.items():
             print(f"{Fore.BLUE+Style.BRIGHT}[ {upgrade_type.capitalize()} Level ]: {level + 1}")
     else:
-        print("Không lấy được dữ liệu, mã trạng thái:", response.status_code)
+        print("Tidak dapat mengambil data, kode status:", response.status_code)
         return None
 
 def check_balance(proxy):
     response = requests.get(url_balance, headers=headers, proxies=get_proxy_dict(proxy))
     if response.status_code == 200:
         balance_data = response.json()
-        print(f"{Fore.YELLOW+Style.BRIGHT}[ Balance ]: {balance_data['data'] / 1000000000}")
+        print(f"{Fore.YELLOW+Style.BRIGHT}[ Saldo ]: {balance_data['data'] / 1000000000}")
         return True
     else:
-        print(f"{Fore.RED+Style.BRIGHT}[ Balance ]: Thất bại |{response.status_code}")
+        print(f"{Fore.RED+Style.BRIGHT}[ Saldo ]: Gagal |{response.status_code}")
         return False
 
 def checkin_daily(proxy):
@@ -153,21 +155,21 @@ def checkin_daily(proxy):
     if response.status_code == 200:
         data = response.json()
         day = data.get('data', {}).get('no', '')
-        print(f"{Fore.GREEN+Style.BRIGHT}[ Checkin ]: Điểm danh thành công | Ngày {day}")
+        print(f"{Fore.GREEN+Style.BRIGHT}[ Checkin ]: Berhasil check-in | Hari {day}")
     else:
         data = response.json()
         if data.get('message') == 'already claimed for today':
-            print(f"{Fore.RED+Style.BRIGHT}[ Checkin ]: Đã điểm danh hôm nay")
+            print(f"{Fore.RED+Style.BRIGHT}[ Checkin ]: Sudah check-in hari ini")
         else:
-            print(f"{Fore.RED+Style.BRIGHT}[ Checkin ]: Thất bại | {data}")
+            print(f"{Fore.RED+Style.BRIGHT}[ Checkin ]: Gagal | {data}")
 
 def upgrade_storage(confirm, proxy):
     if confirm.lower() == 'y':
         response = requests.post(url_upgrade_storage, headers=headers, proxies=get_proxy_dict(proxy))
         if response.status_code == 200:
-            return '[ Upgrade storage ]: Thành công'
+            return '[ Upgrade storage ]: Berhasil'
         else:
-            return '[ Upgrade storage ]: Số dư không đủ'
+            return '[ Upgrade storage ]: Saldo tidak cukup'
     else:
         return None
 
@@ -175,9 +177,9 @@ def upgrade_mining(confirm, proxy):
     if confirm.lower() == 'y':
         response = requests.post(url_upgrade_mining, headers=headers, proxies=get_proxy_dict(proxy))
         if response.status_code == 200:
-            return '[ Upgrade mining ]: Thành công'
+            return '[ Upgrade mining ]: Berhasil'
         else:
-            return '[ Upgrade mining ]: Số dư không đủ'
+            return '[ Upgrade mining ]: Saldo tidak cukup'
     else:
         return None
 
@@ -185,9 +187,9 @@ def upgrade_holy(confirm, proxy):
     if confirm.lower() == 'y':
         response = requests.post(url_upgrade_holy, headers=headers, proxies=get_proxy_dict(proxy))
         if response.status_code == 200:
-            return '[ Upgrade holy ]: Thành công'
+            return '[ Upgrade holy ]: Berhasil'
         else:
-            return '[ Upgrade holy ]: Điều kiện không đủ'
+            return '[ Upgrade holy ]: Kondisi tidak memenuhi syarat'
     else:
         return None
 
@@ -202,22 +204,22 @@ def get_tasks(proxy):
 def complete_task(task_id, task_name, proxy):
     response = requests.post(f'https://elb.seeddao.org/api/v1/tasks/{task_id}', headers=headers, proxies=get_proxy_dict(proxy))
     if response.status_code == 200:
-        print(f"{Fore.GREEN+Style.BRIGHT}[ Tasks ]: Nhiệm vụ {task_name} đã hoàn thành.")
+        print(f"{Fore.GREEN+Style.BRIGHT}[ Tasks ]: Tugas {task_name} telah selesai.")
     else:
-        print(f"{Fore.RED+Style.BRIGHT}[ Tasks ]: Không thể hoàn thành nhiệm vụ {task_name}, mã trạng thái: {response.status_code}")
+        print(f"{Fore.RED+Style.BRIGHT}[ Tasks ]: Tidak dapat menyelesaikan tugas {task_name}, kode status: {response.status_code}")
 
 def main():
     tokens = load_credentials()
     proxies = load_proxies()
 
     if len(tokens) != len(proxies):
-        print("Số lượng proxy không khớp với số lượng token.")
+        print("Jumlah proxy tidak sesuai dengan jumlah token.")
         return
 
-    confirm_storage = input("Tự động nâng cấp storage? (y/n): ")
-    confirm_mining = input("Tự động nâng cấp mining? (y/n): ")
-    confirm_holy = input("Tự động nâng cấp holy? (y/n): ")
-    confirm_task = input("Tự động hoàn thành nhiệm vụ? (y/n): ")
+    confirm_storage = input("Upgrade storage otomatis? (y/n): ")
+    confirm_mining = input("Upgrade mining otomatis? (y/n): ")
+    confirm_holy = input("Upgrade holy otomatis? (y/n): ")
+    confirm_task = input("Selesaikan tugas otomatis? (y/n): ")
 
     while True:
         for index, (token, proxy) in enumerate(zip(tokens, proxies)):
@@ -226,7 +228,7 @@ def main():
 
             info = get_profile(proxy)
             if info:
-                print(f"Đang xử lý tài khoản {info['data']['name']}")
+                print(f"Memproses akun {info['data']['name']}")
 
             if confirm_storage.lower() == 'y':
                 hasil_upgrade = upgrade_storage(confirm_storage, proxy)
@@ -249,12 +251,12 @@ def main():
             if check_balance(proxy):
                 response = requests.post(url_claim, headers=headers, proxies=proxy_dict)
                 if response.status_code == 200:
-                    print(f"{Fore.GREEN+Style.BRIGHT}[ Claim ]: Claim thành công")
+                    print(f"{Fore.GREEN+Style.BRIGHT}[ Claim ]: Claim berhasil")
                 elif response.status_code == 400:
                     response_data = response.json()
-                    print(f"{Fore.RED+Style.BRIGHT}[ Claim ]: Chưa đến giờ claim")
+                    print(f"{Fore.RED+Style.BRIGHT}[ Claim ]: Belum saatnya claim")
                 else:
-                    print("Đã xảy ra lỗi, mã trạng thái:", response.status_code)
+                    print("Terjadi kesalahan, kode status:", response.status_code)
 
                 checkin_daily(proxy)
                 catch_worm(proxy)
@@ -262,7 +264,7 @@ def main():
                     get_tasks(proxy)
 
         for i in range(7200, 0, -1):
-            sys.stdout.write(f"\r{Fore.CYAN+Style.BRIGHT}============ Đã xử lý hết tài khoản, đợi {i} giây trước khi tiếp tục vòng lặp ============")
+            sys.stdout.write(f"\r{Fore.CYAN+Style.BRIGHT}============ Semua akun telah diproses, menunggu {i} detik sebelum melanjutkan siklus ============")
             sys.stdout.flush()
             time.sleep(1)
         print()
